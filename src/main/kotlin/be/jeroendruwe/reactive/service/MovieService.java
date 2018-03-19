@@ -31,4 +31,8 @@ public class MovieService {
         return Flux.<MovieEvent>generate(sink -> sink.next(new MovieEvent(movieId, new Date())))
                 .delayElements(Duration.ofSeconds(1));
     }
+
+    public Mono<Movie> saveMovie(Mono<Movie> movieMono) {
+        return movieMono.flatMap(movieRepository::save);
+    }
 }
