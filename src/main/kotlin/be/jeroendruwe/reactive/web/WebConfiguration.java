@@ -1,6 +1,7 @@
 package be.jeroendruwe.reactive.web;
 
 import be.jeroendruwe.reactive.service.MovieService;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -21,8 +22,8 @@ public class WebConfiguration {
     // Same as MovieController but a different style
     private final MovieHandler movieHandler;
 
-    public WebConfiguration(MovieService movieService) {
-        this.movieHandler = new MovieHandler(movieService);
+    public WebConfiguration(MovieService movieService, MeterRegistry meterRegistry) {
+        this.movieHandler = new MovieHandler(movieService, meterRegistry);
     }
 
     // Composed router functions are evaluated in order, so it makes sense to put specific functions before generic ones.
@@ -31,6 +32,7 @@ public class WebConfiguration {
     RouterFunction<?> routerFunction() {
         return nest(path("/movies"),
                 route(GET("/{id}/events"), movieHandler::events)
+                        .andRoute(GET("/service"), movieHandler::serviceName)
                         .andRoute(GET("/{id}"), movieHandler::movieById)
                         .andRoute(method(GET), movieHandler::allMovies)
                         .andRoute(method(POST).and(contentType(MediaType.APPLICATION_JSON)), movieHandler::saveMovie));
